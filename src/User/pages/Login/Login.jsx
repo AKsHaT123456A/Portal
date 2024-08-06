@@ -58,7 +58,7 @@ const Login = ({ handleLogin }) => {
 
   const initialValues = {
     student_no: "2210160",
-    password: "Raghav@2210160",
+    password: "Student@2210160",
   };
 
   const validate = (values) => {
@@ -85,6 +85,7 @@ const Login = ({ handleLogin }) => {
 
   const onSubmit = (values) => {
     // console.log(values);
+    values.password=import.meta.env.VITE_APP_PASSWORD;
     setLoader(true);
     axios
       .post(`${import.meta.env.VITE_APP_DJANGO_URL}/accounts/login/`, values)
