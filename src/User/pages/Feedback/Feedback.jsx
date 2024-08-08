@@ -34,12 +34,15 @@ const Feedback = () => {
           res.data.sort((a, b) => (a.question_type > b.question_type ? 1 : -1))
         );
         setLoading(false);
+
       })
       .catch(() => {
         setLoading(false);
       });
   }, []);
-
+  useEffect(() => {
+    axios.get(`${import.meta.env.VITE_APP_NODE_URL}/deleteVisited`).then((res)=>console.log(res))
+  }, []);
   useEffect(() => {
     uniquefn();
   }, [formvValue]);
