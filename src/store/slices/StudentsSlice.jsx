@@ -17,7 +17,6 @@ const StudentSlice = createSlice({
       f = action.payload;
     },
     searchStudent: (state, action) => {
-      console.log(action.payload)
       state.initialValue = f;
       state.initialValue = state.initialValue.filter((student) =>
         student.name.toLowerCase().includes(action.payload.toLowerCase())

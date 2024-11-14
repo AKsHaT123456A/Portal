@@ -17,13 +17,12 @@ const SubmitAnswer = ({ status, quesId, ansId }) => {
   // console.log(submitData);
   return axios
     .get(
-      `${import.meta.env.VITE_APP_NODE_URL}/postResponse/${id}?ansId=${
+      `${import.meta.env.VITE_APP_NODE_URL}/handle-response/${id}?ansId=${
         submitData.ansId
       }&quesId=${submitData.quesId}&status=${status}`,
-      submitData
     )
     .then((res) => {
-      return res.data.user; // Return the response data
+      return res.data.userResponses;
     })
     .catch((err) => {
       console.error(err);

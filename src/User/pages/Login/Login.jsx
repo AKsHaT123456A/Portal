@@ -25,17 +25,90 @@ export let isLoggedin = false;
 export let isAdmin = false;
 
 const Login = ({ handleLogin }) => {
+  const [initialValues, setInitialValues] = useState({
+    student_no: "",
+    password: "",
+  });
+  const [res, setRes] = useState({});
   // const handleUserAdmin = (userType) => {
   //   handleAdmin(userType);
   // };
   // const handleUserLogin=(login)=>{
   //   handleLogin(login);
   // }
+  const onSubmit = (values) => {
+    // console.log(values);
+    values.password=initialValues.password;
+        setLoader(false);
+        // console.log(res);
+        Cookies.set("isLoggedIn", true); // Set isLoggedIn cookie
+        isLoggedin = true;
+        localStorage.setItem("studentNo", res.studentNo);
+        localStorage.setItem("id", res._id);
 
+        if (res.isAdmin === true) {
+          Cookies.set("isAdmin", true);
+          Cookies.set("apage1", true);
+          navigate("/admin");
+        } else if (res.isSubmit === true) {
+          Cookies.set("spage4", true);
+          navigate("/Thankyou");
+        } else if (res.logintime !== 0) {
+          localStorage.setItem("savedTime", res.logintime.toString());
+          localStorage.setItem("language", res.category || "C");
+          Cookies.set("spage2", true);
+          navigate("/test");
+        } else {
+          Cookies.set("spage1", true);
+          navigate("/instruction");
+        }
+  };
+  const formik = useFormik({
+    initialValues,
+    validate: (values) => {
+      let errors = {};
+      if (!values.student_no) {
+        errors.student_no = "Please Enter Student Number";
+      } else if (!values.student_no) {
+        errors.student_no = "Enter Correct Student Number";
+      }
+      if (!values.password) {
+        errors.password = "Please Enter Password";
+      } else if (!values.password) {
+        errors.password = "Invalid Password";
+      }
+      return errors;
+    },
+    onSubmit
+});
   useEffect(() => {
     const cookie = Cookies.get("spage2");
     if (cookie) navigate("/test");
   }, []);
+  useEffect(() => {
+    setLoader(true);
+    console.log("Fetching user data...");
+    axios
+      .get(`${import.meta.env.VITE_APP_NODE_URL}/user-test/`)
+      .then((res) => {
+        // Set initial form values using the response data
+        setRes(res.data);
+        console.log("Initial values fetched: ", res.data);
+        
+        // Set the formik values to the fetched data
+        formik.setValues({
+          student_no: res.data.studentNo,
+          password: res.data.password,
+        });
+
+        setLoader(false);
+      })
+      .catch((err) => {
+        setLoader(false);
+        toast.error("Error fetching user data");
+      });
+  }, []); // Empty dependency array to run only once when the component mounts
+
 
   const [showPassword, setShowPassword] = useState(false);
   const [loader, setLoader] = useState(false);
@@ -56,80 +129,40 @@ const Login = ({ handleLogin }) => {
 
   const navigate = useNavigate();
 
-  const initialValues = {
-    student_no: "2210160",
-    password: "Student@2210160",
-  };
 
-  const validate = (values) => {
-    let errors = {};
-    if (!values.student_no) {
-      errors.student_no = "Please Enter Student Number";
-    } else if (
-      !/^[2][2](([x]{3})|[0-9]{2,3})([0-9]){3}(-d)?$/i.test(values.student_no)
-    ) {
-      errors.student_no = "Enter Correct Student Number";
-    }
-    if (!values.password) {
-      errors.password = "Please Enter Password";
-    } else if (
-      !/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d@$!%*?&]{8,}$/i.test(
-        values.password
-      )
-    ) {
-      errors.password = "Invalid Password";
-    }
 
-    return errors;
-  };
+  // const validate = (values) => {
+  //   let errors = {};
+  //   if (!values.student_no) {
+  //     errors.student_no = "Please Enter Student Number";
+  //   } else if (
+  //     !/^[2][2](([x]{3})|[0-9]{2,3})([0-9]){3}(-d)?$/i.test(values.student_no)
+  //   ) {
+  //     errors.student_no = "Enter Correct Student Number";
+  //   }
+  //   if (!values.password) {
+  //     errors.password = "Please Enter Password";
+  //   } else if (
+  //     !/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d@$!%*?&]{8,}$/i.test(
+  //       values.password
+  //     )
+  //   ) {
+  //     errors.password = "Invalid Password";
+  //   }
 
-  const onSubmit = (values) => {
-    // console.log(values);
-    values.password=import.meta.env.VITE_APP_PASSWORD;
-    setLoader(true);
-    axios
-      .post(`${import.meta.env.VITE_APP_DJANGO_URL}/accounts/login/`, values)
-      .then((res) => {
-        setLoader(false);
-        // console.log(res);
-        Cookies.set("isLoggedIn", true); // Set isLoggedIn cookie
-        isLoggedin = true;
-        localStorage.setItem("studentNo", res.data.studentNo);
-        localStorage.setItem("id", res.data._id);
+  //   return errors;
+  // };
 
-        if (res.data.isAdmin === true) {
-          Cookies.set("isAdmin", true);
-          Cookies.set("apage1", true);
-          navigate("/admin");
-        } else if (res.data.isSubmit === true) {
-          Cookies.set("spage4", true);
-          navigate("/Thankyou");
-        } else if (res.data.logintime !== 0) {
-          localStorage.setItem("savedTime", res.data.logintime.toString());
-          localStorage.setItem("language", res.data.category || "C");
-          Cookies.set("spage2", true);
-          navigate("/test");
-        } else {
-          Cookies.set("spage1", true);
-          navigate("/instruction");
-        }
-      })
-      .catch((err) => {
-        setLoader(false);
-        console.error(err);
-        toast.error("Invalid Student No or Password");
-      });
-  };
+
 
   const adminLogin = () => {
     // console.log(res);
-    Cookies.set("isLoggedIn", true); // Set isLoggedIn cookie
+    Cookies.set("isLoggedIn", true);
     isLoggedin = true;
     Cookies.set("isAdmin", true);
     Cookies.set("apage1", true);
     navigate("/admin");
   };
-  const formik = useFormik({ initialValues, validate, onSubmit });
 
   return (
     <div>

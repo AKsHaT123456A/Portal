@@ -34,10 +34,7 @@ const EditFeedback = (props) => {
   const [id, setId] = useState();
 
   useEffect(() => {
-    console.log(
-      feedbakQues.initial[feedbackQuesNo.initialQues],
-      feedbackQuesNo.initialQues
-    );
+   
     initialValues.question = props.feedQues.question;
     initialValues.category = props.feedQues.type;
     setFormvalues(initialValues);
@@ -57,13 +54,11 @@ const EditFeedback = (props) => {
           }
         )
         .then((res) => {
-          console.log(res);
           axios
             .get(
               `${import.meta.env.VITE_APP_DJANGO_URL}/feedback/get-f-question/`
             )
             .then((res) => {
-              console.log(res.data);
               toast.success("Question Edited Successfully")
               // setFeedQues(res.data);
               dispatch(toggleLoader(false))

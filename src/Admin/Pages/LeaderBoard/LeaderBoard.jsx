@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import io from "socket.io-client";
+import { useNavigate } from "react-router-dom";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
@@ -9,20 +9,15 @@ import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
-import { useNavigate } from "react-router-dom";
 import ArrowRightIcon from "@mui/icons-material/ArrowRight";
 import Responses from "./Responses";
 import { useDispatch, useSelector } from "react-redux";
 import { toggleEditOpt } from "../../../store/slices/EditContSlice";
 import axios from "axios";
-import {
-  findResponse,
-  uploadResponse,
-} from "../../../store/slices/ResponseSlice";
+import { findResponse, uploadResponse } from "../../../store/slices/ResponseSlice";
 import Cookies from "js-cookie";
 import updateCookies from "../../utils/updateCookies";
 import Loader from "../../../Loader/Loader";
-// import Trophy from "../../../../public/Images/trophy-star"
 
 const LeaderBoard = () => {
   const [students, setStudents] = useState([]);
@@ -35,61 +30,63 @@ const LeaderBoard = () => {
   const [loader, setLoader] = useState(false);
 
   const dispatch = useDispatch();
-  useEffect(() => {
-    const check = Cookies.get("apage4");
-    if (!check) {
-      navigate("/login");
-    }
-  }, []);
 
-  //SOCKET.io
-
+  // Connect WebSocket Client using the native WebSocket API
   useEffect(() => {
     setLoader(true);
-    const socket = io.connect(`${import.meta.env.VITE_APP_SOCKET_API}`, {
-      transports: ["websocket"], 
-    });
-
+    // Replace the socket.io-client with the native WebSocket API
+    const socket = new WebSocket(`${import.meta.env.VITE_APP_SOCKET_API}?userId=1&role=admin`);
     axios
-      .get(`${import.meta.env.VITE_APP_NODE_URL}/getquestions`)
-      .then((res) => {
-        setLoader(false);
-        setResponseData(res.data.msg);
-        dispatch(findResponse(res.data.msg));
-      });
+    .get(`${import.meta.env.VITE_APP_NODE_URL}/getquestions`)
+    .then((res) => {
+      
+      setLoader(false);
+      setResponseData(res.data.msg);
+    });
 
-    socket.on("leaderboard", (data) => {
-      // console.log(data);
+    socket.onopen = () => {
+      console.log("WebSocket connection established."); // Send a JSON message to the server 
+    };
+      // Listen for leaderboard updates
+    socket.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      
       setStudents(data);
-    });
+      setLoader(false);
+    };
 
-    socket.on("connect_error", (error) => {
-      // console.error("Socket connection error:", error);
-    });
+    socket.onerror = (error) => {
+      console.error("WebSocket Error: ", error);
+      setLoader(false);
+    };
 
+    socket.onclose = () => {
+      console.log("WebSocket connection closed.");
+    };
+
+    // Clean up WebSocket on component unmount
     return () => {
-      socket.disconnect();
+      socket.close();
     };
   }, []);
 
   // Calculate the start and end indices for the current page
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
-  const currentStudents =
-    filterText === ""
-      ? students.slice(startIndex, endIndex)
-      : filteredStudents.slice(startIndex, endIndex);
+  const currentStudents = (filterText === ""
+    ? students.filter(student => student.name) // Filter out students with no name
+    : filteredStudents.filter(student => student.name) // Same for filtered list
+  ).slice(startIndex, endIndex);
   const totalPages = Math.ceil(
-    (filterText === "" ? students.length : filteredStudents.length) /
-      itemsPerPage
+    (filterText === "" ? students.length : filteredStudents.length) / itemsPerPage
   );
 
-  const openResponses = (studentNo) => {
+  const openResponses = ({studentNo}) => {
+    
     axios
-      .get(`${import.meta.env.VITE_APP_NODE_URL}/responses/ques/${studentNo}`)
+      .get(`${import.meta.env.VITE_APP_NODE_URL}/user-responses/${studentNo}`)
       .then((res) => {
-        // console.log(res.data.questions)
-        dispatch(uploadResponse(res.data.questions));
+        dispatch(uploadResponse(res.data.responses));
         dispatch(findResponse(responseData));
       });
     dispatch(toggleEditOpt());
@@ -163,7 +160,7 @@ const LeaderBoard = () => {
                   {currentStudents.map((student, index) => (
                     <TableRow
                       key={index}
-                      onClick={(e) => openResponses(student.studentNo)}
+                      onClick={(e) => openResponses(student)}
                       className="cursor-pointer"
                     >
                       <TableCell className="w-[50px]">
@@ -192,7 +189,7 @@ const LeaderBoard = () => {
                         {student.name}
                       </TableCell>
                       <TableCell sx={{ textAlign: "center" }}>
-                        {student.calculatedTotalScore}
+                        {student.score}
                       </TableCell>
                       <TableCell>
                         <ArrowRightIcon />
@@ -221,7 +218,6 @@ const LeaderBoard = () => {
             <ArrowForwardIcon />
           </button>
         </div>
-        {/* Include your Tabtable component here */}
         <div
           style={{
             display:

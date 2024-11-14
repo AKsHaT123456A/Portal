@@ -9,7 +9,6 @@ const QuesTab = () => {
   // const quesNo=["1","2","3","4","5","6","7","8","9","10"]
   const dispatch = useDispatch();
   const data = useSelector((state) => state.quesList);
- console.log(data)
 
   // const quesNo=useSelector(state=>state.prevNext)
 

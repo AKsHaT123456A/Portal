@@ -38,6 +38,7 @@ const ResponseSlice = createSlice({
       const currentResponse = current(state.studentResponses)[
         state.currentQuesNo
       ];
+      
       // console.log(all_questions,currentResponse,state.currentQuesNo)
 
       //filtering current displaying question
