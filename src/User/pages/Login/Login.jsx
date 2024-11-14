@@ -11,12 +11,12 @@ import {
   Paper,
   TextField,
 } from "@mui/material";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import { useFormik } from "formik";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { Visibility, VisibilityOff, Person } from "@mui/icons-material";
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
 import Cookies from "js-cookie";
 import { deleteCookies } from "../../../Admin/utils/updateCookies";
 import Loader from "../../../Loader/Loader";
@@ -36,6 +36,16 @@ const Login = ({ handleLogin }) => {
   // const handleUserLogin=(login)=>{
   //   handleLogin(login);
   // }
+  useEffect(() => {
+    toast.info("The login credentials are system-generated. Please refer to the name  in the password to check the associated rank.", {
+      position: "top-right",
+      autoClose: 8000, // Close after 8 seconds
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+    });
+  }, []);
   const onSubmit = (values) => {
     // console.log(values);
     values.password=initialValues.password;
@@ -166,6 +176,7 @@ const Login = ({ handleLogin }) => {
 
   return (
     <div>
+    <ToastContainer/>
       <div className="loginPage">
         {/* <img src="/Images/csiLogo.svg"
           style={{ height: 70, width: 50 }}
