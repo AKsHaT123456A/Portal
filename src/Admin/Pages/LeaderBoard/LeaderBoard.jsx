@@ -50,7 +50,9 @@ const LeaderBoard = () => {
       // Listen for leaderboard updates
     socket.onmessage = (event) => {
       const data = JSON.parse(event.data);
-      
+        console.log('====================================');
+        console.log(data);
+        console.log('===================================='); 
       setStudents(data);
       setLoader(false);
     };
@@ -74,13 +76,18 @@ const LeaderBoard = () => {
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const currentStudents = (filterText === ""
-    ? students.filter(student => student.name) // Filter out students with no name
-    : filteredStudents.filter(student => student.name) // Same for filtered list
+    ? students
+        .filter(student => student.name) // First filter: check if the student has a name
+        .filter(student => student.name !== '1') // Second filter: exclude students with name '1'
+    : filteredStudents
+        .filter(student => student.name) // First filter: check if the student has a name
+        .filter(student => student.name !== '1') // Second filter: exclude students with name '1'
   ).slice(startIndex, endIndex);
+  
   const totalPages = Math.ceil(
     (filterText === "" ? students.length : filteredStudents.length) / itemsPerPage
   );
-
+  
   const openResponses = ({studentNo}) => {
     
     axios
